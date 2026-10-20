@@ -31,6 +31,7 @@
             <button onclick="switchSection('events')" id="nav-events" class="py-4 border-b-2 border-indigo-500 font-medium text-sm text-indigo-400 transition">📅 Calendrier & Sorties</button>
             <button onclick="switchSection('finance')" id="nav-finance" class="py-4 border-b-2 border-transparent font-medium text-sm text-slate-400 hover:text-slate-200 transition">💰 Caisse & Budget</button>
             <button onclick="switchSection('chat')" id="nav-chat" class="py-4 border-b-2 border-transparent font-medium text-sm text-slate-400 hover:text-slate-200 transition">💬 Messagerie</button>
+            <button onclick="switchSection('admin')" id="nav-admin" class="py-4 border-b-2 border-transparent font-medium text-sm text-slate-400 hover:text-slate-200 transition hidden">⚙️ Admin Panel</button>
         </div>
     </nav>
 
@@ -159,6 +160,29 @@
                         <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 px-5 py-3 rounded-xl font-semibold shadow-lg shadow-indigo-600/30 transition">Envoyer</button>
                     </form>
                 </div>
+            </div>
+        </section>
+
+        <!-- SECTION ADMIN PANEL -->
+        <section id="section-admin" class="space-y-6 hidden">
+            <div>
+                <h1 class="text-2xl font-bold">Panneau d'Administration</h1>
+                <p class="text-sm text-slate-400">Gestion des utilisateurs et des rôles de l'association JAD.</p>
+            </div>
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-800/50 text-slate-400 text-xs uppercase tracking-wider">
+                            <th class="p-4">Pseudo</th>
+                            <th class="p-4">Nom complet</th>
+                            <th class="p-4">Rôle</th>
+                            <th class="p-4">Date d'inscription</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-users-list" class="divide-y divide-slate-800 text-sm">
+                        <!-- Rempli par admin.js -->
+                    </tbody>
+                </table>
             </div>
         </section>
     </main>
@@ -319,6 +343,7 @@
         import { loadEvents, initEventsForm } from './js/events.js';
         import { loadTransactions, initFinanceForm } from './js/finance.js';
         import { initChat } from './js/chat.js';
+        import { initAdminPanel } from './js/admin.js';
 
         async function initDashboard() {
             const { data: { session }, error } = await supabase.auth.getSession();
@@ -335,6 +360,7 @@
             loadEvents();
             loadTransactions();
             initChat(currentUser);
+            initAdminPanel(currentUser);
 
             // Initialiser les formulaires
             initEventsForm(currentUser);
@@ -351,14 +377,22 @@
             const isEvents = section === 'events';
             const isFinance = section === 'finance';
             const isChat = section === 'chat';
+            const isAdmin = section === 'admin';
 
             document.getElementById('section-events').classList.toggle('hidden', !isEvents);
             document.getElementById('section-finance').classList.toggle('hidden', !isFinance);
             document.getElementById('section-chat').classList.toggle('hidden', !isChat);
+            const adminSection = document.getElementById('section-admin');
+            if (adminSection) adminSection.classList.toggle('hidden', !isAdmin);
             
             document.getElementById('nav-events').className = isEvents ? "py-4 border-b-2 border-indigo-500 font-medium text-sm text-indigo-400 transition" : "py-4 border-b-2 border-transparent font-medium text-sm text-slate-400 hover:text-slate-200 transition";
             document.getElementById('nav-finance').className = isFinance ? "py-4 border-b-2 border-emerald-500 font-medium text-sm text-emerald-400 transition" : "py-4 border-b-2 border-transparent font-medium text-sm text-slate-400 hover:text-slate-200 transition";
             document.getElementById('nav-chat').className = isChat ? "py-4 border-b-2 border-indigo-500 font-medium text-sm text-indigo-400 transition" : "py-4 border-b-2 border-transparent font-medium text-sm text-slate-400 hover:text-slate-200 transition";
+            
+            const navAdmin = document.getElementById('nav-admin');
+            if (navAdmin && !navAdmin.classList.contains('hidden')) {
+                navAdmin.className = isAdmin ? "py-4 border-b-2 border-indigo-500 font-medium text-sm text-indigo-400 transition" : "py-4 border-b-2 border-transparent font-medium text-sm text-slate-400 hover:text-slate-200 transition";
+            }
         }
 
         window.openModal = function(id) { 
