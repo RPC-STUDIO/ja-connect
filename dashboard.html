@@ -29,11 +29,12 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex space-x-8">
             <button onclick="switchSection('events')" id="nav-events" class="py-4 border-b-2 border-indigo-500 font-medium text-sm text-indigo-400 transition">📅 Calendrier & Sorties</button>
             <button onclick="switchSection('finance')" id="nav-finance" class="py-4 border-b-2 border-transparent font-medium text-sm text-slate-400 hover:text-slate-200 transition">💰 Caisse & Budget</button>
+            <button onclick="switchSection('chat')" id="nav-chat" class="py-4 border-b-2 border-transparent font-medium text-sm text-slate-400 hover:text-slate-200 transition">💬 Messagerie</button>
         </div>
     </nav>
 
     <!-- Contenu Principal -->
-    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col">
         
         <!-- SECTION ÉVÉNEMENTS -->
         <section id="section-events" class="space-y-6">
@@ -90,6 +91,73 @@
                         <!-- Injection dynamique -->
                     </tbody>
                 </table>
+            </div>
+        </section>
+
+        <!-- SECTION MESSAGERIE -->
+        <section id="section-chat" class="flex-1 flex flex-col hidden space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h1 class="text-2xl font-bold">Espace de Discussion</h1>
+                    <p class="text-sm text-slate-400">Discutez en temps réel, partagez des événements et des notes de caisse.</p>
+                </div>
+                <button onclick="openModal('group-modal')" class="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg text-sm font-medium shadow-lg shadow-indigo-600/30 transition">+ Créer un groupe</button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 flex-1 min-h-[600px]">
+                <!-- Liste des Groupes / Canaux -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col space-y-2">
+                    <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Canaux & Groupes</h2>
+                    <div id="groups-list" class="space-y-1 overflow-y-auto flex-1">
+                        <!-- Rempli par app.js -->
+                    </div>
+                </div>
+
+                <!-- Fenêtre de Chat -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl lg:col-span-3 flex flex-col overflow-hidden">
+                    <!-- En-tête du groupe actif -->
+                    <div class="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/80">
+                        <div>
+                            <h3 id="active-group-name" class="font-bold text-lg">Sélectionnez un groupe</h3>
+                            <p id="active-group-desc" class="text-xs text-slate-400">Aucun canal actif</p>
+                        </div>
+                        <button onclick="openModal('members-modal')" id="manage-members-btn" class="hidden text-xs bg-slate-800 hover:bg-slate-700 border border-slate-700 px-3 py-1.5 rounded-lg transition">Gérer les membres</button>
+                    </div>
+
+                    <!-- Corps des messages -->
+                    <div id="messages-container" class="flex-1 p-4 overflow-y-auto space-y-4 flex flex-col">
+                        <div class="text-center text-slate-500 my-auto">Sélectionnez un groupe pour commencer à discuter.</div>
+                    </div>
+
+                    <!-- Aperçu de l'élément attaché (s'il y en a un) -->
+                    <div id="attachment-preview" class="hidden px-4 py-2 bg-slate-800/80 border-t border-slate-700 flex items-center justify-between text-sm">
+                        <div id="attachment-preview-content" class="text-indigo-300 truncate"></div>
+                        <button type="button" onclick="clearAttachment()" class="text-slate-400 hover:text-white font-bold ml-2">×</button>
+                    </div>
+
+                    <!-- Formulaire d'envoi -->
+                    <form id="message-form" class="p-4 border-t border-slate-800 bg-slate-900 flex items-center space-x-2">
+                        <!-- Bouton Attachement (Evénement / Transaction) -->
+                        <div class="relative">
+                            <button type="button" onclick="toggleAttachMenu()" class="p-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition border border-slate-700" title="Partager un événement ou une transaction">
+                                📎
+                            </button>
+                            <!-- Menu déroulant d'attachement -->
+                            <div id="attach-menu" class="hidden absolute bottom-14 left-0 w-64 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl p-2 z-50 space-y-1">
+                                <div class="text-xs font-bold text-slate-400 px-2 py-1 uppercase">Attacher un élément</div>
+                                <button type="button" onclick="openAttachSelector('event')" class="w-full text-left px-3 py-2 hover:bg-slate-700 rounded-lg text-sm transition flex items-center space-x-2">
+                                    <span>📅</span> <span>Un événement</span>
+                                </button>
+                                <button type="button" onclick="openAttachSelector('transaction')" class="w-full text-left px-3 py-2 hover:bg-slate-700 rounded-lg text-sm transition flex items-center space-x-2">
+                                    <span>💰</span> <span>Une transaction (caisse)</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <input type="text" id="message-input" autocomplete="off" placeholder="Écrivez votre message..." class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-indigo-500">
+                        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 px-5 py-3 rounded-xl font-semibold shadow-lg shadow-indigo-600/30 transition">Envoyer</button>
+                    </form>
+                </div>
             </div>
         </section>
     </main>
@@ -156,21 +224,100 @@
         </div>
     </div>
 
+    <!-- MODAL CRÉATION DE GROUPE -->
+    <div id="group-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="bg-slate-900 border border-slate-800 max-w-lg w-full p-6 rounded-2xl space-y-4">
+            <h3 class="text-lg font-bold">Créer un nouveau groupe de discussion</h3>
+            <form id="group-form" class="space-y-4">
+                <div>
+                    <label class="block text-xs uppercase font-semibold text-slate-400 mb-1">Nom du groupe</label>
+                    <input type="text" id="grp-name" required class="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white" placeholder="Ex: Projet Sortie Lasergame">
+                </div>
+                <div>
+                    <label class="block text-xs uppercase font-semibold text-slate-400 mb-1">Description</label>
+                    <textarea id="grp-desc" rows="2" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white" placeholder="Description du canal..."></textarea>
+                </div>
+                <div class="flex justify-end space-x-3 pt-4">
+                    <button type="button" onclick="closeModal('group-modal')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm">Annuler</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-sm font-semibold">Créer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL GESTION DES MEMBRES DU GROUPE -->
+    <div id="members-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="bg-slate-900 border border-slate-800 max-w-lg w-full p-6 rounded-2xl space-y-4">
+            <h3 class="text-lg font-bold">Gérer les membres du groupe</h3>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs uppercase font-semibold text-slate-400 mb-1">Ajouter un membre</label>
+                    <div class="flex space-x-2">
+                        <select id="add-member-select" class="flex-1 bg-slate-950 border border-slate-700 rounded-lg p-3 text-white text-sm">
+                            <!-- Rempli dynamiquement -->
+                        </select>
+                        <button type="button" onclick="addMemberToGroup()" class="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg text-sm font-semibold transition">Ajouter</button>
+                    </div>
+                </div>
+                <div class="pt-4 border-t border-slate-800">
+                    <h4 class="text-xs uppercase font-semibold text-slate-400 mb-2">Membres actuels</h4>
+                    <div id="current-members-list" class="space-y-2 max-h-48 overflow-y-auto">
+                        <!-- Rempli dynamiquement -->
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-end pt-4">
+                <button type="button" onclick="closeModal('members-modal')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL SÉLECTION D'ATTACHEMENT (Événement ou Transaction) -->
+    <div id="attach-selector-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="bg-slate-900 border border-slate-800 max-w-xl w-full p-6 rounded-2xl space-y-4">
+            <h3 id="attach-modal-title" class="text-lg font-bold">Sélectionner un élément à attacher</h3>
+            <div id="attach-selector-list" class="space-y-2 max-h-80 overflow-y-auto">
+                <!-- Rempli dynamiquement -->
+            </div>
+            <div class="flex justify-end pt-4">
+                <button type="button" onclick="closeModal('attach-selector-modal')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm">Annuler</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Script logique principal -->
     <script type="module" src="js/app.js"></script>
     <script>
         // Fonctions globales d'interface (Modaux & Onglets)
         function switchSection(section) {
             const isEvents = section === 'events';
+            const isFinance = section === 'finance';
+            const isChat = section === 'chat';
+
             document.getElementById('section-events').classList.toggle('hidden', !isEvents);
-            document.getElementById('section-finance').classList.toggle('hidden', isEvents);
+            document.getElementById('section-finance').classList.toggle('hidden', !isFinance);
+            document.getElementById('section-chat').classList.toggle('hidden', !isChat);
             
             document.getElementById('nav-events').className = isEvents ? "py-4 border-b-2 border-indigo-500 font-medium text-sm text-indigo-400 transition" : "py-4 border-b-2 border-transparent font-medium text-sm text-slate-400 hover:text-slate-200 transition";
-            document.getElementById('nav-finance').className = !isEvents ? "py-4 border-b-2 border-emerald-500 font-medium text-sm text-emerald-400 transition" : "py-4 border-b-2 border-transparent font-medium text-sm text-slate-400 hover:text-slate-200 transition";
+            document.getElementById('nav-finance').className = isFinance ? "py-4 border-b-2 border-emerald-500 font-medium text-sm text-emerald-400 transition" : "py-4 border-b-2 border-transparent font-medium text-sm text-slate-400 hover:text-slate-200 transition";
+            document.getElementById('nav-chat').className = isChat ? "py-4 border-b-2 border-indigo-500 font-medium text-sm text-indigo-400 transition" : "py-4 border-b-2 border-transparent font-medium text-sm text-slate-400 hover:text-slate-200 transition";
         }
 
         function openModal(id) { document.getElementById(id).classList.remove('hidden'); document.getElementById(id).classList.add('flex'); }
         function closeModal(id) { document.getElementById(id).classList.add('hidden'); document.getElementById(id).classList.remove('flex'); }
+
+        function toggleAttachMenu() {
+            const menu = document.getElementById('attach-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        // Fermer le menu d'attachement si clic en dehors
+        window.addEventListener('click', (e) => {
+            const menu = document.getElementById('attach-menu');
+            if (menu && !menu.contains(e.target) && !e.target.closest('button[onclick="toggleAttachMenu()"]')) {
+                menu.classList.add('hidden');
+            }
+        });
     </script>
 </body>
 </html>
