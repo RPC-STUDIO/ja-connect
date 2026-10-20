@@ -6,6 +6,7 @@
     <title>JA-Connect - Connexion</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 <body class="h-full flex items-center justify-center px-4 sm:px-6 lg:px-8">
     <div class="max-w-md w-full space-y-8 bg-slate-800 p-8 rounded-2xl shadow-2xl border border-slate-700">
@@ -25,15 +26,13 @@
 
         <!-- Formulaire -->
         <form id="auth-form" class="mt-6 space-y-4">
-            <div id="signup-fields" class="hidden space-y-4">
-                <div>
-                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Prénom & Nom</label>
-                    <input type="text" id="full_name" class="w-full px-4 py-3 rounded-lg bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-indigo-500" placeholder="Alex Dupont">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Pseudo unique (Username)</label>
-                    <input type="text" id="username" class="w-full px-4 py-3 rounded-lg bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-indigo-500" placeholder="alex93">
-                </div>
+            <div id="name-field" class="hidden">
+                <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Prénom & Nom</label>
+                <input type="text" id="full_name" class="w-full px-4 py-3 rounded-lg bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-indigo-500" placeholder="Alex Dupont">
+            </div>
+            <div id="username-field" class="hidden">
+                <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Pseudo unique</label>
+                <input type="text" id="username" class="w-full px-4 py-3 rounded-lg bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-indigo-500" placeholder="AlexJAD">
             </div>
             <div>
                 <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Email</label>
@@ -53,95 +52,8 @@
     </div>
 
     <script type="module">
-        import { supabase } from './js/supabaseClient.js'
-
-        let isLoginMode = true;
-
-        window.switchTab = (mode) => {
-            isLoginMode = (mode === 'login');
-            const signupFields = document.getElementById('signup-fields');
-            const submitBtn = document.getElementById('submit-btn');
-            const tabLogin = document.getElementById('tab-login');
-            const tabSignup = document.getElementById('tab-signup');
-
-            if (isLoginMode) {
-                signupFields.classList.add('hidden');
-                submitBtn.textContent = "Se connecter";
-                tabLogin.className = "flex-1 py-2 font-medium text-indigo-400 border-b-2 border-indigo-500 transition";
-                tabSignup.className = "flex-1 py-2 font-medium text-slate-400 hover:text-white transition";
-            } else {
-                signupFields.classList.remove('hidden');
-                submitBtn.textContent = "S'inscrire";
-                tabSignup.className = "flex-1 py-2 font-medium text-indigo-400 border-b-2 border-indigo-500 transition";
-                tabLogin.className = "flex-1 py-2 font-medium text-slate-400 hover:text-white transition";
-            }
-        }
-
-        // Vérifier si déjà connecté
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            if (session) window.location.href = 'dashboard.html';
-        });
-
-        const form = document.getElementById('auth-form');
-        const errorDiv = document.getElementById('error-msg');
-
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            errorDiv.classList.add('hidden');
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-
-            if (isLoginMode) {
-                const { error } = await supabase.auth.signInWithPassword({ email, password });
-                if (error) {
-                    errorDiv.textContent = error.message;
-                    errorDiv.classList.remove('hidden');
-                } else {
-                    window.location.href = 'dashboard.html';
-                }
-            } else {
-                const fullName = document.getElementById('full_name').value;
-                const username = document.getElementById('username').value.trim().toLowerCase();
-
-                if (!username || username.length < 3) {
-                    errorDiv.textContent = "Le pseudo doit contenir au moins 3 caractères.";
-                    errorDiv.classList.remove('hidden');
-                    return;
-                }
-
-                // Vérifier si le pseudo est déjà pris
-                const { data: existingUser, error: checkError } = await supabase
-                    .from('profiles')
-                    .select('id')
-                    .eq('username', username)
-                    .maybeSingle();
-
-                if (existingUser) {
-                    errorDiv.textContent = "Ce pseudo est déjà utilisé. Veuillez en choisir un autre.";
-                    errorDiv.classList.remove('hidden');
-                    return;
-                }
-
-                const { error } = await supabase.auth.signUp({
-                    email,
-                    password,
-                    options: { 
-                        data: { 
-                            full_name: fullName,
-                            username: username 
-                        } 
-                    }
-                });
-
-                if (error) {
-                    errorDiv.textContent = error.message;
-                    errorDiv.classList.remove('hidden');
-                } else {
-                    alert('Compte créé avec succès ! Vous pouvez maintenant vous connecter.');
-                    switchTab('login');
-                }
-            }
-        });
+        import { initAuthPage } from './js/auth.js';
+        initAuthPage();
     </script>
 </body>
 </html>

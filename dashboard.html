@@ -8,6 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 <body class="min-h-full flex flex-col">
     <!-- Navbar -->
@@ -18,9 +19,7 @@
                 <span class="font-bold text-xl tracking-wide">JA-Connect</span>
             </div>
             <div class="flex items-center space-x-4">
-                <span id="user-greeting" class="text-sm text-slate-400 hidden sm:inline">Chargement...</span>
-                <button onclick="openModal('settings-modal')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 p-2.5 rounded-lg text-sm font-medium transition border border-slate-700" title="Paramètres du compte">⚙️</button>
-                <button id="admin-nav-btn" onclick="openModal('admin-modal')" class="hidden bg-indigo-950 hover:bg-indigo-900 text-indigo-300 px-3 py-2 rounded-lg text-sm font-medium transition border border-indigo-800">🛡️ Admin</button>
+                <button onclick="openModal('profile-modal')" id="user-greeting" class="text-sm text-slate-300 hover:text-white font-medium bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 transition">Chargement...</button>
                 <button id="logout-btn" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-lg text-sm font-medium transition border border-slate-700">Déconnexion</button>
             </div>
         </div>
@@ -59,7 +58,7 @@
                     <h1 class="text-2xl font-bold">Suivi de la Caisse</h1>
                     <p class="text-sm text-slate-400">Gestion des cotisations, recettes et dépenses associatives.</p>
                 </div>
-                <button id="add-tx-btn" onclick="openModal('finance-modal')" class="bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-lg text-sm font-medium shadow-lg shadow-emerald-600/30 transition">+ Ajouter une transaction</button>
+                <button onclick="openModal('finance-modal')" class="bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-lg text-sm font-medium shadow-lg shadow-emerald-600/30 transition">+ Ajouter une transaction</button>
             </div>
 
             <!-- Cartes de Synthèse & Graphique -->
@@ -111,7 +110,7 @@
                 <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col space-y-2">
                     <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Canaux & Groupes</h2>
                     <div id="groups-list" class="space-y-1 overflow-y-auto flex-1">
-                        <!-- Rempli par app.js -->
+                        <!-- Rempli par chat.js -->
                     </div>
                 </div>
 
@@ -164,78 +163,29 @@
         </section>
     </main>
 
-    <!-- MODAL PARAMÈTRES DU COMPTE -->
-    <div id="settings-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-        <div class="bg-slate-900 border border-slate-800 max-w-lg w-full p-6 rounded-2xl space-y-6">
+    <!-- MODAL PROFIL / PARAMÈTRES -->
+    <div id="profile-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="bg-slate-900 border border-slate-800 max-w-md w-full p-6 rounded-2xl space-y-4">
             <div class="flex items-center justify-between">
-                <h3 class="text-xl font-bold">⚙️ Paramètres du compte</h3>
-                <button onclick="closeModal('settings-modal')" class="text-slate-400 hover:text-white font-bold">✕</button>
+                <h3 class="text-lg font-bold">Mon Profil JA-Connect</h3>
+                <button type="button" onclick="closeModal('profile-modal')" class="text-slate-400 hover:text-white font-bold text-lg">×</button>
             </div>
-
-            <div class="space-y-4">
-                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-2">
-                    <div class="flex justify-between text-sm">
-                        <span class="text-slate-400">Rôle actuel :</span>
-                        <span id="settings-role-badge" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">Membre</span>
-                    </div>
-                    <div class="flex justify-between text-sm">
-                        <span class="text-slate-400">Membre depuis :</span>
-                        <span id="settings-created-at" class="text-white font-medium">-</span>
-                    </div>
+            <div class="space-y-3 bg-slate-950 p-4 rounded-xl border border-slate-800 text-sm">
+                <div><span class="text-slate-400">Nom complet :</span> <span id="profile-fullname" class="font-medium text-white">-</span></div>
+                <div><span class="text-slate-400">Rôle :</span> <span id="profile-role" class="font-medium text-indigo-400">-</span></div>
+                <div id="profile-created" class="text-xs text-slate-500 pt-2 border-t border-slate-800">-</div>
+            </div>
+            <form id="profile-form" class="space-y-4">
+                <div>
+                    <label class="block text-xs uppercase font-semibold text-slate-400 mb-1">Modifier mon pseudo</label>
+                    <input type="text" id="profile-username" required class="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white">
                 </div>
-
-                <!-- Formulaire Profil / Pseudo -->
-                <form id="profile-form" class="space-y-3">
-                    <div>
-                        <label class="block text-xs uppercase font-semibold text-slate-400 mb-1">Pseudo unique (Username)</label>
-                        <input type="text" id="settings-username" required class="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white">
-                    </div>
-                    <div>
-                        <label class="block text-xs uppercase font-semibold text-slate-400 mb-1">Prénom & Nom</label>
-                        <input type="text" id="settings-fullname" required class="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white">
-                    </div>
-                    <button type="submit" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 rounded-lg font-semibold text-sm transition">Mettre à jour le profil</button>
-                </form>
-
-                <!-- Formulaire Mot de passe -->
-                <form id="password-form" class="space-y-3 pt-4 border-t border-slate-800">
-                    <div>
-                        <label class="block text-xs uppercase font-semibold text-slate-400 mb-1">Nouveau mot de passe</label>
-                        <input type="password" id="new-password" required placeholder="••••••••" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white">
-                    </div>
-                    <button type="submit" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg font-semibold text-sm transition">Changer de mot de passe</button>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL ADMINISTRATION (Gestion des rôles) -->
-    <div id="admin-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
-        <div class="bg-slate-900 border border-slate-800 max-w-2xl w-full p-6 rounded-2xl space-y-6">
-            <div class="flex items-center justify-between">
-                <h3 class="text-xl font-bold">🛡️ Panneau d'Administration - Membres & Rôles</h3>
-                <button onclick="closeModal('admin-modal')" class="text-slate-400 hover:text-white font-bold">✕</button>
-            </div>
-            <div class="space-y-3">
-                <p class="text-sm text-slate-400">Gérez les rôles des membres de l'association JAD (Admin, Trésorier, Membre).</p>
-                <div class="bg-slate-950 rounded-xl border border-slate-800 overflow-hidden max-h-96 overflow-y-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-slate-900 text-slate-400 text-xs uppercase tracking-wider">
-                                <th class="p-3">Pseudo / Nom</th>
-                                <th class="p-3">Rôle actuel</th>
-                                <th class="p-3 text-right">Modifier le rôle</th>
-                            </tr>
-                        </thead>
-                        <tbody id="admin-members-list" class="divide-y divide-slate-800 text-sm">
-                            <!-- Rempli par app.js -->
-                        </tbody>
-                    </table>
+                <div id="profile-feedback" class="text-sm hidden"></div>
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="button" onclick="closeModal('profile-modal')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm">Fermer</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-sm font-semibold">Enregistrer</button>
                 </div>
-            </div>
-            <div class="flex justify-end">
-                <button type="button" onclick="closeModal('admin-modal')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm">Fermer</button>
-            </div>
+            </form>
         </div>
     </div>
 
@@ -362,11 +312,42 @@
         </div>
     </div>
 
-    <!-- Script logique principal -->
-    <script type="module" src="js/app.js"></script>
-    <script>
+    <!-- Script d'orchestration global du tableau de bord -->
+    <script type="module">
+        import { supabase } from './js/config.js';
+        import { loadUserProfile } from './js/profile.js';
+        import { loadEvents, initEventsForm } from './js/events.js';
+        import { loadTransactions, initFinanceForm } from './js/finance.js';
+        import { initChat } from './js/chat.js';
+
+        async function initDashboard() {
+            const { data: { session }, error } = await supabase.auth.getSession();
+            if (!session) {
+                window.location.href = 'index.html';
+                return;
+            }
+            const currentUser = session.user;
+
+            // Charger profil & navbar
+            await loadUserProfile(currentUser);
+
+            // Charger les sections
+            loadEvents();
+            loadTransactions();
+            initChat(currentUser);
+
+            // Initialiser les formulaires
+            initEventsForm(currentUser);
+            initFinanceForm(currentUser);
+        }
+
+        document.getElementById('logout-btn').addEventListener('click', async () => {
+            await supabase.auth.signOut();
+            window.location.href = 'index.html';
+        });
+
         // Fonctions globales d'interface (Modaux & Onglets)
-        function switchSection(section) {
+        window.switchSection = function(section) {
             const isEvents = section === 'events';
             const isFinance = section === 'finance';
             const isChat = section === 'chat';
@@ -380,12 +361,25 @@
             document.getElementById('nav-chat').className = isChat ? "py-4 border-b-2 border-indigo-500 font-medium text-sm text-indigo-400 transition" : "py-4 border-b-2 border-transparent font-medium text-sm text-slate-400 hover:text-slate-200 transition";
         }
 
-        function openModal(id) { document.getElementById(id).classList.remove('hidden'); document.getElementById(id).classList.add('flex'); }
-        function closeModal(id) { document.getElementById(id).classList.add('hidden'); document.getElementById(id).classList.remove('flex'); }
+        window.openModal = function(id) { 
+            const el = document.getElementById(id);
+            if (el) {
+                el.classList.remove('hidden'); 
+                el.classList.add('flex'); 
+            }
+        }
+        
+        window.closeModal = function(id) { 
+            const el = document.getElementById(id);
+            if (el) {
+                el.classList.add('hidden'); 
+                el.classList.remove('flex'); 
+            }
+        }
 
-        function toggleAttachMenu() {
+        window.toggleAttachMenu = function() {
             const menu = document.getElementById('attach-menu');
-            menu.classList.toggle('hidden');
+            if (menu) menu.classList.toggle('hidden');
         }
 
         window.addEventListener('click', (e) => {
@@ -394,6 +388,8 @@
                 menu.classList.add('hidden');
             }
         });
+
+        initDashboard();
     </script>
 </body>
 </html>
