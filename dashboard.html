@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full bg-slate-950 text-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JA-Connect - Tableau de bord</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="min-h-full flex flex-col">
+    <!-- Navbar -->
+    <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-lg bg-indigo-600 flex items-center justify-center font-bold text-lg shadow-md shadow-indigo-600/30">JAD</div>
+                <span class="font-bold text-xl tracking-wide">JA-Connect</span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span id="user-greeting" class="text-sm text-slate-400 hidden sm:inline">Chargement...</span>
+                <button id="logout-btn" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-lg text-sm font-medium transition border border-slate-700">Déconnexion</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation par Onglets -->
+    <nav class="bg-slate-900/50 border-b border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex space-x-8">
+            <button onclick="switchSection('events')" id="nav-events" class="py-4 border-b-2 border-indigo-500 font-medium text-sm text-indigo-400 transition">📅 Calendrier & Sorties</button>
+            <button onclick="switchSection('finance')" id="nav-finance" class="py-4 border-b-2 border-transparent font-medium text-sm text-slate-400 hover:text-slate-200 transition">💰 Caisse & Budget</button>
+        </div>
+    </nav>
+
+    <!-- Contenu Principal -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- SECTION ÉVÉNEMENTS -->
+        <section id="section-events" class="space-y-6">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h1 class="text-2xl font-bold">Prochaines Sorties & Événements</h1>
+                    <p class="text-sm text-slate-400">Consultez et proposez les activités de l'accueil ados.</p>
+                </div>
+                <button onclick="openModal('event-modal')" class="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg text-sm font-medium shadow-lg shadow-indigo-600/30 transition">+ Nouvel événement</button>
+            </div>
+            <div id="events-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Injection dynamique des événements -->
+            </div>
+        </section>
+
+        <!-- SECTION FINANCES / CAISSE -->
+        <section id="section-finance" class="space-y-6 hidden">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h1 class="text-2xl font-bold">Suivi de la Caisse</h1>
+                    <p class="text-sm text-slate-400">Gestion des cotisations, recettes et dépenses associatives.</p>
+                </div>
+                <button onclick="openModal('finance-modal')" class="bg-emerald-600 hover:bg-emerald-700 px-4 py-2 rounded-lg text-sm font-medium shadow-lg shadow-emerald-600/30 transition">+ Ajouter une transaction</button>
+            </div>
+
+            <!-- Cartes de Synthèse & Graphique -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-sm font-medium text-slate-400 uppercase">Solde Actuel de la Caisse</h3>
+                        <p id="total-balance" class="text-4xl font-extrabold mt-2 text-emerald-400">0.00 €</p>
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-slate-800 text-xs text-slate-500">Mis à jour en temps réel via Supabase</div>
+                </div>
+                <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl lg:col-span-2 flex items-center justify-center">
+                    <div class="w-full h-64">
+                        <canvas id="budgetChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tableau des transactions -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-800/50 text-slate-400 text-xs uppercase tracking-wider">
+                            <th class="p-4">Date</th>
+                            <th class="p-4">Libellé</th>
+                            <th class="p-4">Type</th>
+                            <th class="p-4 text-right">Montant</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transactions-list" class="divide-y divide-slate-800 text-sm">
+                        <!-- Injection dynamique -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <!-- MODAL ÉVÉNEMENT -->
+    <div id="event-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="bg-slate-900 border border-slate-800 max-w-lg w-full p-6 rounded-2xl space-y-4">
+            <h3 class="text-lg font-bold">Créer un nouvel événement</h3>
+            <form id="event-form" class="space-y-4">
+                <div>
+                    <label class="block text-xs uppercase font-semibold text-slate-400 mb-1">Titre</label>
+                    <input type="text" id="ev-title" required class="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white">
+                </div>
+                <div>
+                    <label class="block text-xs uppercase font-semibold text-slate-400 mb-1">Description</label>
+                    <textarea id="ev-desc" rows="3" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white"></textarea>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs uppercase font-semibold text-slate-400 mb-1">Date et Heure</label>
+                        <input type="datetime-local" id="ev-date" required class="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white">
+                    </div>
+                    <div>
+                        <label class="block text-xs uppercase font-semibold text-slate-400 mb-1">Lieu</label>
+                        <input type="text" id="ev-location" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white">
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-3 pt-4">
+                    <button type="button" onclick="closeModal('event-modal')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm">Annuler</button>
+                    <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg text-sm font-semibold">Enregistrer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL TRANSACTION -->
+    <div id="finance-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+        <div class="bg-slate-900 border border-slate-800 max-w-lg w-full p-6 rounded-2xl space-y-4">
+            <h3 class="text-lg font-bold">Ajouter une transaction</h3>
+            <form id="finance-form" class="space-y-4">
+                <div>
+                    <label class="block text-xs uppercase font-semibold text-slate-400 mb-1">Libellé</label>
+                    <input type="text" id="tx-title" required class="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white" placeholder="Ex: Vente de gâteaux, Achat matériel...">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs uppercase font-semibold text-slate-400 mb-1">Montant (€)</label>
+                        <input type="number" step="0.01" id="tx-amount" required class="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white" placeholder="15.00">
+                    </div>
+                    <div>
+                        <label class="block text-xs uppercase font-semibold text-slate-400 mb-1">Type</label>
+                        <select id="tx-type" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white">
+                            <option value="recette">Recette (+)</option>
+                            <option value="cotisation">Cotisation (+)</option>
+                            <option value="depense">Dépense (-)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-3 pt-4">
+                    <button type="button" onclick="closeModal('finance-modal')" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm">Annuler</button>
+                    <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 rounded-lg text-sm font-semibold">Ajouter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Script logique principal -->
+    <script type="module" src="js/app.js"></script>
+    <script>
+        // Fonctions globales d'interface (Modaux & Onglets)
+        function switchSection(section) {
+            const isEvents = section === 'events';
+            document.getElementById('section-events').classList.toggle('hidden', !isEvents);
+            document.getElementById('section-finance').classList.toggle('hidden', isEvents);
+            
+            document.getElementById('nav-events').className = isEvents ? "py-4 border-b-2 border-indigo-500 font-medium text-sm text-indigo-400 transition" : "py-4 border-b-2 border-transparent font-medium text-sm text-slate-400 hover:text-slate-200 transition";
+            document.getElementById('nav-finance').className = !isEvents ? "py-4 border-b-2 border-emerald-500 font-medium text-sm text-emerald-400 transition" : "py-4 border-b-2 border-transparent font-medium text-sm text-slate-400 hover:text-slate-200 transition";
+        }
+
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); document.getElementById(id).classList.add('flex'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); document.getElementById(id).classList.remove('flex'); }
+    </script>
+</body>
+</html>

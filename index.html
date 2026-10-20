@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full bg-slate-900">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JA-Connect - Connexion</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="h-full flex items-center justify-center px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8 bg-slate-800 p-8 rounded-2xl shadow-2xl border border-slate-700">
+        <div class="text-center">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-indigo-600 text-white text-2xl font-bold mb-4 shadow-lg shadow-indigo-500/30">
+                JAD
+            </div>
+            <h2 class="text-3xl font-extrabold text-white">JA-Connect</h2>
+            <p class="mt-2 text-sm text-slate-400">Espace de gestion de l'accueil ados</p>
+        </div>
+
+        <!-- Onglets Connexion / Inscription -->
+        <div class="flex border-b border-slate-700">
+            <button id="tab-login" onclick="switchTab('login')" class="flex-1 py-2 font-medium text-indigo-400 border-b-2 border-indigo-500 transition">Connexion</button>
+            <button id="tab-signup" onclick="switchTab('signup')" class="flex-1 py-2 font-medium text-slate-400 hover:text-white transition">Inscription</button>
+        </div>
+
+        <!-- Formulaire -->
+        <form id="auth-form" class="mt-6 space-y-4">
+            <div id="name-field" class="hidden">
+                <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Prénom & Nom</label>
+                <input type="text" id="full_name" class="w-full px-4 py-3 rounded-lg bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-indigo-500" placeholder="Alex Dupont">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Email</label>
+                <input type="email" id="email" required class="w-full px-4 py-3 rounded-lg bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-indigo-500" placeholder="votre@email.com">
+            </div>
+            <div>
+                <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Mot de passe</label>
+                <input type="password" id="password" required class="w-full px-4 py-3 rounded-lg bg-slate-900 border border-slate-700 text-white focus:outline-none focus:border-indigo-500" placeholder="••••••••">
+            </div>
+
+            <div id="error-msg" class="text-red-400 text-sm hidden bg-red-950/50 p-3 rounded-lg border border-red-900"></div>
+
+            <button type="submit" id="submit-btn" class="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-lg shadow-indigo-600/30 transition">
+                Se connecter
+            </button>
+        </form>
+    </div>
+
+    <script type="module">
+        import { supabase } from './js/supabaseClient.js'
+
+        let isLoginMode = true;
+
+        window.switchTab = (mode) => {
+            isLoginMode = (mode === 'login');
+            const nameField = document.getElementById('name-field');
+            const submitBtn = document.getElementById('submit-btn');
+            const tabLogin = document.getElementById('tab-login');
+            const tabSignup = document.getElementById('tab-signup');
+
+            if (isLoginMode) {
+                nameField.classList.add('hidden');
+                submitBtn.textContent = "Se connecter";
+                tabLogin.className = "flex-1 py-2 font-medium text-indigo-400 border-b-2 border-indigo-500 transition";
+                tabSignup.className = "flex-1 py-2 font-medium text-slate-400 hover:text-white transition";
+            } else {
+                nameField.classList.remove('hidden');
+                submitBtn.textContent = "S'inscrire";
+                tabSignup.className = "flex-1 py-2 font-medium text-indigo-400 border-b-2 border-indigo-500 transition";
+                tabLogin.className = "flex-1 py-2 font-medium text-slate-400 hover:text-white transition";
+            }
+        }
+
+        // Vérifier si déjà connecté
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (session) window.location.href = 'dashboard.html';
+        });
+
+        const form = document.getElementById('auth-form');
+        const errorDiv = document.getElementById('error-msg');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            errorDiv.classList.add('hidden');
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            if (isLoginMode) {
+                const { error } = await supabase.auth.signInWithPassword({ email, password });
+                if (error) {
+                    errorDiv.textContent = error.message;
+                    errorDiv.classList.remove('hidden');
+                } else {
+                    window.location.href = 'dashboard.html';
+                }
+            } else {
+                const fullName = document.getElementById('full_name').value;
+                const { error } = await supabase.auth.signUp({
+                    email,
+                    password,
+                    options: { data: { full_name: fullName } }
+                });
+                if (error) {
+                    errorDiv.textContent = error.message;
+                    errorDiv.classList.remove('hidden');
+                } else {
+                    alert('Compte créé ! Vérifiez vos emails si la confirmation est active, ou connectez-vous.');
+                    switchTab('login');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
